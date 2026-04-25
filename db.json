@@ -1,0 +1,25 @@
+{
+  "users": {
+    "6950803349": {
+      "userId": "6950803349",
+      "username": "M.",
+      "address": "0xeDDb76456d67E8bC24290d9c4Fb5fec88A83edbe",
+      "privateKey": "0xcea72f91d8bcd43fbeebe246752b354941334fd793d0db481e3d04b60d0016fc",
+      "settings": {
+        "defaultBuy": "0.1",
+        "slippage": 5,
+        "gasBoost": 1.5,
+        "snipeAmount": "0.1"
+      },
+      "totalTrades": 0,
+      "totalFees": 0,
+      "referredBy": null,
+      "referralCode": "6950803349",
+      "createdAt": 1777113623733
+    }
+  },
+  "positions": {},
+  "snipes": {},
+  "fees": [],
+  "states": {}
+}
