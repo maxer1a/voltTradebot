@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VoltBot — Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #02030a;
+      --s1: #080c18;
+      --s2: #0d1226;
+      --border: #141c35;
+      --border2: #1e2845;
+      --text: #dde3f5;
+      --muted: #4a5580;
+      --accent: #3b82f6;
+      --green: #22d3a5;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --purple: #a78bfa;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'Outfit', sans-serif;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ─── Sidebar ──────────────────────────────────────────────────────────── */
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: var(--s1);
+      border-right: 1px solid var(--border);
+      padding: 28px 0;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+    }
+
+    .sidebar-logo {
+      padding: 0 24px 28px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    .logo-mark {
+      font-size: 22px; font-weight: 800;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-sub {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: var(--mono);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 24px;
+      font-size: 13px; font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+
+    .nav-item:hover { color: var(--text); background: rgba(59,130,246,0.05); }
+    .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(59,130,246,0.08); }
+
+    .nav-section {
+      font-size: 10px; color: var(--muted);
+      font-family: var(--mono); letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 16px 24px 6px;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 20px 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .live-indicator {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; font-family: var(--mono); color: var(--green);
+    }
+
+    .live-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ─── Main ─────────────────────────────────────────────────────────────── */
+    .main {
+      margin-left: 220px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: var(--s1);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+    }
+
+    .topbar-title { font-size: 16px; font-weight: 600; }
+    .topbar-time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+    .content { padding: 32px; }
+
+    /* ─── KPI Cards ────────────────────────────────────────────────────────── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .kpi {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .kpi:hover { border-color: var(--border2); }
+
+    .kpi::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .kpi.blue::before { background: var(--accent); }
+    .kpi.green::before { background: var(--green); }
+    .kpi.amber::before { background: var(--amber); }
+    .kpi.purple::before { background: var(--purple); }
+
+    .kpi-label {
+      font-size: 11px; font-family: var(--mono);
+      color: var(--muted); text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 10px;
+    }
+
+    .kpi-value {
+      font-size: 28px; font-weight: 700;
+      letter-spacing: -0.5px; line-height: 1;
+    }
+
+    .kpi-value.blue { color: var(--accent); }
+    .kpi-value.green { color: var(--green); }
+    .kpi-value.amber { color: var(--amber); }
+    .kpi-value.purple { color: var(--purple); }
+
+    .kpi-sub {
+      font-size: 12px; color: var(--muted);
+      font-family: var(--mono); margin-top: 6px;
+    }
+
+    .kpi-icon {
+      position: absolute; right: 20px; top: 20px;
+      font-size: 28px; opacity: 0.15;
+    }
+
+    /* ─── Chart placeholder ────────────────────────────────────────────────── */
+    .chart-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .panel {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .panel-title { font-size: 14px; font-weight: 600; }
+
+    .panel-badge {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--muted); background: var(--s2);
+      padding: 3px 10px; border-radius: 100px;
+      border: 1px solid var(--border);
+    }
+
+    .panel-body { padding: 24px; }
+
+    /* Revenue chart using CSS bars */
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      height: 160px;
+    }
+
+    .bar-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+    }
+
+    .bar {
+      width: 100%;
+      border-radius: 4px 4px 0 0;
+      min-height: 4px;
+      background: linear-gradient(to top, var(--accent), rgba(59,130,246,0.3));
+      transition: height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .bar:hover { background: linear-gradient(to top, var(--green), rgba(34,211,165,0.4)); }
+
+    .bar-label {
+      font-size: 9px; font-family: var(--mono);
+      color: var(--muted); margin-top: 6px;
+    }
+
+    /* ─── Activity feed ────────────────────────────────────────────────────── */
+    .activity-list { display: flex; flex-direction: column; }
+
+    .activity-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .a-buy { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .a-sell { background: var(--red); box-shadow: 0 0 8px var(--red); }
+    .a-snipe { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+    .a-user { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
+
+    .activity-text { flex: 1; font-size: 12px; color: var(--text); }
+    .activity-text span { color: var(--muted); }
+    .activity-fee { font-family: var(--mono); font-size: 11px; color: var(--green); }
+    .activity-time { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+
+    /* ─── Stats table ──────────────────────────────────────────────────────── */
+    .table-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    /* ─── Earnings calculator ──────────────────────────────────────────────── */
+    .calc-panel {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 28px;
+    }
+
+    .calc-body {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .calc-input-group { margin-bottom: 16px; }
+
+    .calc-label {
+      font-size: 11px; color: var(--muted);
+      font-family: var(--mono); text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 8px;
+    }
+
+    .calc-slider {
+      width: 100%; height: 4px;
+      appearance: none;
+      background: var(--border2);
+      border-radius: 4px;
+      outline: none;
+    }
+
+    .calc-slider::-webkit-slider-thumb {
+      appearance: none;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(59,130,246,0.5);
+    }
+
+    .calc-val {
+      font-family: var(--mono); font-size: 13px;
+      color: var(--text); margin-top: 6px;
+    }
+
+    .calc-results { }
+
+    .calc-result-item {
+      display: flex; justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .calc-result-item:last-child { border-bottom: none; }
+    .calc-result-lbl { font-size: 13px; color: var(--muted); }
+    .calc-result-val { font-family: var(--mono); font-weight: 600; }
+    .calc-result-val.big { font-size: 20px; color: var(--green); }
+
+    /* ─── Responsive ───────────────────────────────────────────────────────── */
+    @media (max-width: 1200px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .chart-row { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .calc-body { grid-template-columns: 1fr; }
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .kpi { animation: fadeIn 0.4s ease both; }
+    .kpi:nth-child(1) { animation-delay: 0.05s; }
+    .kpi:nth-child(2) { animation-delay: 0.1s; }
+    .kpi:nth-child(3) { animation-delay: 0.15s; }
+    .kpi:nth-child(4) { animation-delay: 0.2s; }
+
+    .refresh-btn {
+      background: var(--s2); border: 1px solid var(--border);
+      color: var(--muted); padding: 6px 14px;
+      border-radius: 8px; font-family: var(--mono);
+      font-size: 11px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<!-- ─── Sidebar ─────────────────────────────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">⚡ VoltBot</div>
+    <div class="logo-sub">Admin Dashboard</div>
+  </div>
+
+  <div class="nav-section">Overview</div>
+  <a class="nav-item active">📊 Dashboard</a>
+  <a class="nav-item">💰 Revenue</a>
+  <a class="nav-item">👥 Users</a>
+
+  <div class="nav-section">Operations</div>
+  <a class="nav-item">📋 Trades</a>
+  <a class="nav-item">🎯 Snipes</a>
+  <a class="nav-item">🔔 Alerts</a>
+
+  <div class="nav-section">System</div>
+  <a class="nav-item">⚙️ Config</a>
+  <a class="nav-item">🔐 Security</a>
+
+  <div class="sidebar-footer">
+    <div class="live-indicator">
+      <div class="live-dot"></div>
+      Bot Online
+    </div>
+  </div>
+</aside>
+
+<!-- ─── Main ─────────────────────────────────────────────────────────────────── -->
+<div class="main">
+
+  <div class="topbar">
+    <div class="topbar-title">Dashboard</div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button class="refresh-btn" onclick="loadStats()">↻ Refresh</button>
+      <div class="topbar-time" id="clock">--:--:--</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi green">
+        <div class="kpi-icon">Ξ</div>
+        <div class="kpi-label">Total Fees Earned</div>
+        <div class="kpi-value green" id="totalFees">0.0000</div>
+        <div class="kpi-sub" id="totalFeesUsd">≈ $0.00 USD</div>
+      </div>
+      <div class="kpi blue">
+        <div class="kpi-icon">⚡</div>
+        <div class="kpi-label">24h Revenue</div>
+        <div class="kpi-value blue" id="fees24h">0.0000</div>
+        <div class="kpi-sub" id="fees24hUsd">≈ $0.00 USD</div>
+      </div>
+      <div class="kpi amber">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-label">Total Users</div>
+        <div class="kpi-value amber" id="totalUsers">0</div>
+        <div class="kpi-sub">registered wallets</div>
+      </div>
+      <div class="kpi purple">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-label">Total Trades</div>
+        <div class="kpi-value purple" id="totalTrades">0</div>
+        <div class="kpi-sub">executed on-chain</div>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="chart-row">
+
+      <!-- Revenue bar chart -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Revenue (ETH) — Last 7 Days</div>
+          <div class="panel-badge" id="ethPrice">ETH: $—</div>
+        </div>
+        <div class="panel-body">
+          <div class="bar-chart" id="barChart">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Live activity -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Live Activity</div>
+          <div class="live-indicator" style="gap:6px">
+            <div class="live-dot"></div>
+            <span style="font-size:11px;font-family:var(--mono)">live</span>
+          </div>
+        </div>
+        <div class="panel-body" style="padding:0 24px;">
+          <div class="activity-list" id="activityFeed">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Earnings Calculator -->
+    <div class="calc-panel">
+      <div class="panel-header">
+        <div class="panel-title">💰 Earnings Calculator</div>
+        <div class="panel-badge">0.5% fee per trade</div>
+      </div>
+      <div class="calc-body">
+        <div>
+          <div class="calc-input-group">
+            <div class="calc-label">Daily Volume (ETH)</div>
+            <input type="range" class="calc-slider" id="volumeSlider" min="1" max="1000" value="50" oninput="calcEarnings()"/>
+            <div class="calc-val"><span id="volumeVal">50</span> ETH/day</div>
+          </div>
+          <div class="calc-input-group">
+            <div class="calc-label">ETH Price (USD)</div>
+            <input type="range" class="calc-slider" id="priceSlider" min="1000" max="10000" value="3400" step="100" oninput="calcEarnings()"/>
+            <div class="calc-val">$<span id="priceVal">3,400</span></div>
+          </div>
+        </div>
+        <div class="calc-results">
+          <div class="calc-result-item">
+            <span class="calc-result-lbl">Per day</span>
+            <span class="calc-result-val green" id="perDay">0.25 ETH</span>
+          </div>
+          <div class="calc-result-item">
+            <span class="calc-result-lbl">Per week</span>
+            <span class="calc-result-val" id="perWeek">1.75 ETH</span>
+          </div>
+          <div class="calc-result-item">
+            <span class="calc-result-lbl">Per month</span>
+            <span class="calc-result-val" id="perMonth">7.5 ETH</span>
+          </div>
+          <div class="calc-result-item">
+            <span class="calc-result-lbl">Monthly USD</span>
+            <span class="calc-result-val big" id="perMonthUsd">$25,500</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = window.location.origin.includes('localhost') 
+  ? 'http://localhost:3002' 
+  : ''; // same origin in production
+
+const ADMIN_KEY = localStorage.getItem('adminKey') || prompt('Enter admin key:');
+if (ADMIN_KEY) localStorage.setItem('adminKey', ADMIN_KEY);
+
+// ─── Clock ────────────────────────────────────────────────────────────────────
+setInterval(() => {
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+}, 1000);
+
+// ─── Load stats ───────────────────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const res = await fetch(`${API}/api/stats`, {
+      headers: { 'x-admin-key': ADMIN_KEY }
+    });
+    const d = await res.json();
+
+    document.getElementById('totalFees').textContent = d.totalFeesEth + ' ETH';
+    document.getElementById('totalFeesUsd').textContent = '≈ $' + d.totalFeesUsd + ' USD';
+    document.getElementById('fees24h').textContent = d.fees24hEth + ' ETH';
+    document.getElementById('fees24hUsd').textContent = '≈ $' + d.fees24hUsd + ' USD';
+    document.getElementById('totalUsers').textContent = d.totalUsers;
+    document.getElementById('totalTrades').textContent = d.totalTrades;
+    document.getElementById('ethPrice').textContent = 'ETH: $' + d.ethPrice;
+
+    document.getElementById('priceSlider').value = d.ethPrice;
+    document.getElementById('priceVal').textContent = Number(d.ethPrice).toLocaleString();
+    calcEarnings();
+  } catch (e) {
+    console.log('API offline — showing demo data');
+    loadDemoData();
+  }
+}
+
+function loadDemoData() {
+  document.getElementById('totalFees').textContent = '1.2847 ETH';
+  document.getElementById('totalFeesUsd').textContent = '≈ $4,368 USD';
+  document.getElementById('fees24h').textContent = '0.1432 ETH';
+  document.getElementById('fees24hUsd').textContent = '≈ $487 USD';
+  document.getElementById('totalUsers').textContent = '342';
+  document.getElementById('totalTrades').textContent = '1,847';
+  document.getElementById('ethPrice').textContent = 'ETH: $3,400';
+}
+
+// ─── Bar chart ────────────────────────────────────────────────────────────────
+function renderChart() {
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const values = [0.08, 0.12, 0.09, 0.18, 0.22, 0.31, 0.14];
+  const max = Math.max(...values);
+
+  const chart = document.getElementById('barChart');
+  chart.innerHTML = days.map((d, i) => {
+    const pct = (values[i] / max * 100).toFixed(0);
+    return `
+      <div class="bar-wrap">
+        <div class="bar" style="height:${pct}%" title="${values[i]} ETH"></div>
+        <div class="bar-label">${d}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─── Activity feed ────────────────────────────────────────────────────────────
+const MOCK_ACTIVITY = [
+  { type:'buy', text:'User bought PEPE', sub:'0x3f2a...', fee:'0.0005 ETH', time:'2m ago' },
+  { type:'sell', text:'User sold SHIB', sub:'0x7b1c...', fee:'0.0012 ETH', time:'4m ago' },
+  { type:'user', text:'New user joined', sub:'via referral', fee:'', time:'7m ago' },
+  { type:'snipe', text:'Snipe executed', sub:'0xd4e1...', fee:'0.0008 ETH', time:'12m ago' },
+  { type:'buy', text:'User bought WOJAK', sub:'0x9a3d...', fee:'0.0003 ETH', time:'18m ago' },
+  { type:'sell', text:'User sold DOGE', sub:'0x2c8f...', fee:'0.0021 ETH', time:'25m ago' },
+];
+
+function renderActivity() {
+  const feed = document.getElementById('activityFeed');
+  const colorMap = { buy:'a-buy', sell:'a-sell', snipe:'a-snipe', user:'a-user' };
+
+  feed.innerHTML = MOCK_ACTIVITY.map(a => `
+    <div class="activity-item">
+      <div class="activity-dot ${colorMap[a.type]}"></div>
+      <div class="activity-text">
+        ${a.text}<br><span>${a.sub}</span>
+      </div>
+      ${a.fee ? `<div class="activity-fee">+${a.fee}</div>` : ''}
+      <div class="activity-time">${a.time}</div>
+    </div>
+  `).join('');
+}
+
+// Simulate live activity
+let actIdx = 0;
+setInterval(() => {
+  const newItem = {
+    type: ['buy','sell','buy','snipe','user'][Math.floor(Math.random()*5)],
+    text: ['User bought TOKEN','User sold TOKEN','New snipe set','New user joined'][Math.floor(Math.random()*4)],
+    sub: '0x' + Math.random().toString(16).slice(2,8) + '...',
+    fee: (Math.random() * 0.002).toFixed(4) + ' ETH',
+    time: 'just now'
+  };
+  MOCK_ACTIVITY.unshift(newItem);
+  MOCK_ACTIVITY.pop();
+  MOCK_ACTIVITY.forEach(a => { if(a.time === 'just now') return; });
+  renderActivity();
+}, 8000);
+
+// ─── Earnings calc ────────────────────────────────────────────────────────────
+function calcEarnings() {
+  const volume = parseFloat(document.getElementById('volumeSlider').value);
+  const price = parseFloat(document.getElementById('priceSlider').value);
+
+  document.getElementById('volumeVal').textContent = volume;
+  document.getElementById('priceVal').textContent = price.toLocaleString();
+
+  const dayEth = volume * 0.005;
+  const weekEth = dayEth * 7;
+  const monthEth = dayEth * 30;
+  const monthUsd = monthEth * price;
+
+  document.getElementById('perDay').textContent = dayEth.toFixed(4) + ' ETH';
+  document.getElementById('perWeek').textContent = weekEth.toFixed(3) + ' ETH';
+  document.getElementById('perMonth').textContent = monthEth.toFixed(2) + ' ETH';
+  document.getElementById('perMonthUsd').textContent = '$' + monthUsd.toLocaleString(undefined, {maximumFractionDigits:0});
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+loadStats();
+renderChart();
+renderActivity();
+calcEarnings();
+setInterval(loadStats, 30000);
+</script>
+</body>
+</html>
