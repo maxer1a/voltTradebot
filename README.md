@@ -1,0 +1,2 @@
+# voltTradebot
+a trading bot.
