@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "node bot/index.js",
-    "bot": "node bot/index.js",
-    "api": "node bot/api.js",
-    "dev": "node --watch bot/index.js"
+    "start": "node index.js",
+    "bot": "node index.js",
+    "api": "node api.js",
+    "dev": "node --watch index.js"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
